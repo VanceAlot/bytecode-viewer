@@ -52,7 +52,7 @@ public class TabbedPane extends JPanel
     private static long lastMouseClick = System.currentTimeMillis();
     public final static MouseListener buttonHoverAnimation = new ButtonHoverAnimation();
     public static final Color BLANK_COLOR = new Color(0, 0, 0, 0);
-    
+
     public TabbedPane(int tabIndex, String tabWorkingName, String fileContainerName, String name, final JTabbedPane existingTabs, ResourceViewer resource)
     {
         // unset default FlowLayout' gaps
@@ -61,7 +61,7 @@ public class TabbedPane extends JPanel
         this.tabName = name;
         this.fileContainerName = fileContainerName;
         this.resource = resource;
-    
+
         if (existingTabs == null)
             throw new NullPointerException("TabbedPane is null");
 
@@ -79,33 +79,52 @@ public class TabbedPane extends JPanel
         this.add(exitButton);
         // add more space to the top of the component
         setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
-        
+
         //define the right click pop-up menu
         JPopupMenu rightClickMenu = new JPopupMenu();
         JMenuItem closeAllTabs = new JMenuItem(TranslatedStrings.CLOSE_ALL_BUT_THIS + ": " + name);
         JMenuItem closeTab = new JMenuItem(TranslatedStrings.CLOSE_TAB + ": " + name);
-    
+
         rightClickMenu.add(closeAllTabs);
         rightClickMenu.add(closeTab);
         //setComponentPopupMenu(rightClickMenu);
-        
+
         exitButton.setComponentPopupMenu(rightClickMenu);
         exitButton.addMouseListener(new MouseClickedListener(e ->
         {
             if (e.getModifiersEx() != InputEvent.ALT_DOWN_MASK || System.currentTimeMillis() - lastMouseClick < 100)
                 return;
-    
+
             lastMouseClick = System.currentTimeMillis();
-            final int i = existingTabs.indexOfTabComponent(TabbedPane.this);
-            if (i != -1)
-                existingTabs.remove(i);
+            removeSelfFrom(existingTabs);
         }));
-        
+
+        this.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent arg0) { }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if (e.getButton() != MouseEvent.BUTTON2) return;
+
+                removeSelfFrom(existingTabs);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent arg0) { }
+
+            @Override
+            public void mouseEntered(MouseEvent arg0) { }
+
+            @Override
+            public void mouseExited(MouseEvent arg0) { }
+        });
+
         closeTab.addActionListener(e ->
         {
             TabExitButton tabExitButton = (TabExitButton) ((JPopupMenu)((JMenuItem) e.getSource()).getParent()).getInvoker();
             final int index = tabExitButton.getTabIndex();
-    
+
             if (index != -1)
                 existingTabs.remove(index);
         });
@@ -113,19 +132,19 @@ public class TabbedPane extends JPanel
         {
             TabExitButton tabExitButton = (TabExitButton) ((JPopupMenu)((JMenuItem) e.getSource()).getParent()).getInvoker();
             final int index = tabExitButton.getTabIndex();
-            
+
             while (true)
             {
                 if (existingTabs.getTabCount() <= 1)
                     return;
-                
+
                 if (index != 0)
                     existingTabs.remove(0);
                 else
                     existingTabs.remove(1);
             }
         });
-        
+
         //tab dragging
         if(BytecodeViewer.EXPERIMENTAL_TAB_CODE)
         {
@@ -142,7 +161,7 @@ public class TabbedPane extends JPanel
                     stopDragging(e.getX(), e.getY());
                 }
             });*/
-            
+
             this.addMouseListener(new MouseListener() {
                 @Override public void mouseClicked(MouseEvent e) {}
                 @Override public void mouseEntered(MouseEvent arg0) {}
@@ -155,7 +174,7 @@ public class TabbedPane extends JPanel
                 }
             });
         }
-        
+
         //middle click close
         if(BytecodeViewer.EXPERIMENTAL_TAB_CODE)
         {
@@ -166,13 +185,17 @@ public class TabbedPane extends JPanel
                 {
                     if (e.getButton() != MouseEvent.BUTTON2)
                         return;
-    
-                    final int i = existingTabs.indexOfTabComponent(TabbedPane.this);
-                    if (i != -1)
-                        existingTabs.remove(i);
+
+                    removeSelfFrom(existingTabs);
                 }
             });
         }
+    }
+
+    private void removeSelfFrom(JTabbedPane existingTabs) {
+        final int i = existingTabs.indexOfTabComponent(TabbedPane.this);
+        if (i != -1)
+            existingTabs.remove(i);
     }
 
     private void stopDragging(int mouseX, int mouseY)
@@ -181,13 +204,13 @@ public class TabbedPane extends JPanel
         {
             Rectangle bounds = new Rectangle(1, 1, mouseX, mouseY);
             System.out.println("debug-5: " + mouseX + ", " + mouseY);
-            
+
             int totalTabs = BytecodeViewer.viewer.workPane.tabs.getTabCount();
             int index = -1;
             for (int i = 0; i < totalTabs; i++)
             {
                 Component c = BytecodeViewer.viewer.workPane.tabs.getTabComponentAt(i);
-                
+
                 if (c != null && bounds.intersects(c.getBounds()))
                     index = i; //replace this tabs position
             }
@@ -210,25 +233,25 @@ public class TabbedPane extends JPanel
                 BytecodeViewer.viewer.workPane.tabs.setTabComponentAt(index, this);
             }
         }
-        
+
         SwingUtilities.invokeLater(() ->
         {
             label.setBackground(BLANK_COLOR);
             label.updateUI();
         });
     }
-    
+
     public void onMousePressed(MouseEvent e)
     {
         BytecodeViewer.viewer.workPane.tabs.dispatchEvent(e);
-    
+
         if(e.getButton() == 1)
         {
             startedDragging = System.currentTimeMillis();
             //dragging = true;
             if (probablyABadIdea != null)
                 probablyABadIdea.stopped = true;
-            
+
             probablyABadIdea = new DelayTabbedPaneThread(TabbedPane.this);
             probablyABadIdea.start();
             repaint();
@@ -246,7 +269,7 @@ public class TabbedPane extends JPanel
             stopDragging(e.getX(), e.getY());
         }
     }
-    
+
     private static final long serialVersionUID = -4774885688297538774L;
-    
+
 }
