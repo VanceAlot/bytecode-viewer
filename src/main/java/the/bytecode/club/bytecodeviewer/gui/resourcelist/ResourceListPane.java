@@ -4,6 +4,7 @@ import me.konloch.kontainer.io.DiskWriter;
 import org.apache.commons.io.FilenameUtils;
 import the.bytecode.club.bytecodeviewer.BytecodeViewer;
 import the.bytecode.club.bytecodeviewer.decompilers.Decompiler;
+import the.bytecode.club.bytecodeviewer.gui.components.listeners.PressKeyListener;
 import the.bytecode.club.bytecodeviewer.gui.contextmenu.ContextMenu;
 import the.bytecode.club.bytecodeviewer.resources.ResourceContainer;
 import the.bytecode.club.bytecodeviewer.resources.importing.Import;
@@ -417,6 +418,13 @@ public class ResourceListPane extends TranslatedVisibleComponent implements File
     
     public void attachTreeListeners()
     {
+        tree.addKeyListener(new PressKeyListener(e -> {
+            if(e.getKeyCode() != KeyEvent.VK_DELETE) return;
+
+            TreePath selPath = ResourceListPane.this.tree.getSelectionPath();
+            removeNode(tree, selPath);
+        }));
+
         tree.addMouseListener(new MouseAdapter()
         {
             @Override
