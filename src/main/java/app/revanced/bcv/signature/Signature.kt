@@ -1,12 +1,14 @@
 package app.revanced.bcv.signature
 
-import org.objectweb.asm.Type
-import org.objectweb.asm.tree.InsnList
+import org.jf.dexlib2.AccessFlags
+import org.jf.dexlib2.Opcode
+import java.util.EnumSet
 
 @Suppress("ArrayInDataClass")
 data class Signature(
-    val returns: Type,
-    val accessors: Int,
-    val parameters: Array<Type>,
-    val opcodes: InsnList
+    val name: String,
+    val returnType: String,
+    val accessFlags: Int,
+    val methodParameters: Iterable<String>,
+    val opcodes: MutableSet<Opcode>
 )

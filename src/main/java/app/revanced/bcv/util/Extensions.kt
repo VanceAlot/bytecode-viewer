@@ -13,10 +13,3 @@ internal operator fun JsonObject.set(k: String, v: String) =
 
 internal operator fun JsonObject.set(k: String, v: JsonElement) =
     this.add(k, v)
-
-internal fun Int.toOpcodeName(): String? =
-    OpcodeInfo.OPCODES[this]?.lowercase()
-
-internal fun InsnList.stripLabels(): List<AbstractInsnNode> = this.filter {
-    it !is LabelNode && it !is LineNumberNode
-}
